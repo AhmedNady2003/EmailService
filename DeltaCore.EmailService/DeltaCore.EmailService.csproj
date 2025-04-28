@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+
+		<!-- NuGet Info -->
+		<PackageId>DeltaCore.EmailService</PackageId>
+		<Authors>Ahmed Nady</Authors>
+		<Company>DeltaCore</Company>
+		<PackageTags>email, smtp, otp, mail</PackageTags>
+		<Description>This is a NuGet package for DeltaCore Email Service, Send mail and otp and verify otp.</Description>
+		<RepositoryUrl>https://github.com/AhmedNady2003/DeltaCore.EmailService</RepositoryUrl>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+
+		<!-- Versioning -->
+		<Version>$(PackageVersion)</Version>
+		<GitCommitHash>$(GitCommitHash)</GitCommitHash>
+		<GitTag>$(GitTag)</GitTag>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="DeltaCore.CacheHelper" Version="1.0.2" />
+		<PackageReference Include="Polly" Version="8.5.2" />
+		<None Include="../README.md" Pack="true" PackagePath="" />
+	</ItemGroup>
+
+</Project>

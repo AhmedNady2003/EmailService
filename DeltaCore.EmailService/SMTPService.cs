@@ -188,5 +188,51 @@ namespace DeltaCore.EmailService
         }
 
         private string GetCacheKey(string email) => $"{email}:otp-code";
+
+        public async Task<bool> SendOTPAsync(string email, string key, cashIn cash = cashIn.MEMORY, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var throttleKey = $"{email}:otp-last-sent";
+                var lastSent = await _redisCache.GetDataAsync<DateTime?>(throttleKey);
+
+                if (lastSent.HasValue && DateTime.UtcNow - lastSent.Value < TimeSpan.FromSeconds(60))
+                {
+                    _logger.LogWarning("OTP request throttled for {Email}", email);
+                    return false;
+                }
+
+                var verificationCode = GenerateVerificationCode();
+                var otpCacheKey = GetCacheKey(key);
+
+                if (cash == cashIn.REDIS)
+                    await _redisCache.SetDataAsync(otpCacheKey, verificationCode, cancellationToken);
+                else
+                    _memoryCache.SetData(otpCacheKey, verificationCode);
+
+                var body = string.IsNullOrEmpty(_emailSettings.OTPHtmlBodyTemplate)
+                    ? $"<h3>Your verification code is: <b>{verificationCode}</b></h3>"
+                    : _emailSettings.OTPHtmlBodyTemplate.Replace("{code}", verificationCode).Replace("{organization}", _emailSettings.OrganizationName);
+
+                await _retryPolicy.ExecuteAsync(() => SendMailAsync(email, "Your Verification Code", body, cancellationToken));
+
+                await _redisCache.SetDataAsync(throttleKey, DateTime.UtcNow, cancellationToken);
+
+                _logger.LogInformation("OTP sent successfully to {Email}", email);
+                return true;
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogWarning("Sending OTP cancelled for {Email}", email);
+                return false;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error sending OTP to {Email}", email);
+                return false;
+            }
+        }
     }
 }

@@ -10,7 +10,8 @@ namespace DeltaCore.EmailService
     {
         Task<bool> SendEmailAsync(string email, string subject, string body, CancellationToken cancellationToken = default);
         Task<bool> SendOTPAsync(string email, cashIn cash = cashIn.MEMORY, CancellationToken cancellationToken = default);
-        Task<bool> VerifyOTP(string email, string code, cashIn cash = cashIn.MEMORY);
+        Task<bool> VerifyOTP(string key, string code, cashIn cash = cashIn.MEMORY);
+        Task<bool> SendOTPAsync(string email,string key, cashIn cash = cashIn.MEMORY, CancellationToken cancellationToken = default);
         public enum cashIn
         {
             MEMORY,

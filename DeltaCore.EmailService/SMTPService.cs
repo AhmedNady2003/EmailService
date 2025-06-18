@@ -1,13 +1,14 @@
-﻿using Polly;
+﻿using DeltaCore.CacheHelper;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Polly;
 using System;
-using System.Net.Mail;
 using System.Net;
+using System.Net.Mail;
+using System.Runtime;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
-using DeltaCore.CacheHelper;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using static DeltaCore.EmailService.IEmailService;
 
 namespace DeltaCore.EmailService
@@ -128,10 +129,18 @@ namespace DeltaCore.EmailService
                     await _redisCache.SetDataAsync(otpCacheKey, verificationCode, cancellationToken);
                 else
                     _memoryCache.SetData(otpCacheKey, verificationCode);
+                var path = Path.Combine(Directory.GetCurrentDirectory(), _emailSettings.OTPHtmlBodyTemplatePath);
+                if (File.Exists(path))
+                {
+                    _emailSettings.OTPHtmlBodyTemplate = File.ReadAllText(path);
+                }
 
                 var body = string.IsNullOrEmpty(_emailSettings.OTPHtmlBodyTemplate)
                     ? $"<h3>Your verification code is: <b>{verificationCode}</b></h3>"
-                    : _emailSettings.OTPHtmlBodyTemplate.Replace("{code}", verificationCode).Replace("{organization}", _emailSettings.OrganizationName);
+                    : _emailSettings.OTPHtmlBodyTemplate
+                        .Replace("{code}", verificationCode)
+                        .Replace("{organization}", _emailSettings.OrganizationName);
+               
 
                 await _retryPolicy.ExecuteAsync(() => SendMailAsync(email, "Your Verification Code", body, cancellationToken));
 

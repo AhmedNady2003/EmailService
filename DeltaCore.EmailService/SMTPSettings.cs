@@ -11,6 +11,7 @@ namespace DeltaCore.EmailService
         public string FromEmail { get; set; }
         public string OrganizationName { get; set; }
         public string OTPHtmlBodyTemplate { get; set; }
+        public string OTPHtmlBodyTemplatePath { get; set; }
 
     }
 }

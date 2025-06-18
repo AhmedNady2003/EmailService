@@ -129,7 +129,7 @@ namespace DeltaCore.EmailService
                     await _redisCache.SetDataAsync(otpCacheKey, verificationCode, cancellationToken);
                 else
                     _memoryCache.SetData(otpCacheKey, verificationCode);
-                var path = Path.Combine(Directory.GetCurrentDirectory(), _emailSettings.OTPHtmlBodyTemplatePath);
+                var path = _emailSettings.OTPHtmlBodyTemplatePath;
                 if (File.Exists(path))
                 {
                     _emailSettings.OTPHtmlBodyTemplate = File.ReadAllText(path);
